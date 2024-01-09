@@ -4,6 +4,7 @@ import RT_utility as rtu
 import numpy as np
 from PIL import Image as im
 import math
+import RT_pbar
 
 class Renderer():
 
@@ -17,6 +18,8 @@ class Renderer():
     def render(self):
         # gather lights to the light list
         self.scene.find_lights()
+        renderbar = RT_pbar.start_animated_marker(self.camera.img_height*self.camera.img_width)
+        k = 0
                 
         for j in range(self.camera.img_height):
             for i in range(self.camera.img_width):
@@ -28,10 +31,14 @@ class Renderer():
                     pixel_color = pixel_color + self.integrator.compute_scattering(generated_ray, self.scene, self.camera.max_depth)
 
                 self.camera.write_to_film(i, j, pixel_color)
+                renderbar.update(k)
+                k = k+1
 
     def render_jittered(self):
         # gather lights to the light list
         self.scene.find_lights()
+        renderbar = RT_pbar.start_animated_marker(self.camera.img_height*self.camera.img_width)
+        k = 0
         sqrt_spp = int(math.sqrt(self.camera.samples_per_pixel))
                 
         for j in range(self.camera.img_height):
@@ -46,6 +53,8 @@ class Renderer():
                         pixel_color = pixel_color + self.integrator.compute_scattering(generated_ray, self.scene, self.camera.max_depth)
 
                 self.camera.write_to_film(i, j, pixel_color)
+                renderbar.update(k)
+                k = k+1
         
 
     def write_img2png(self, strPng_filename):
