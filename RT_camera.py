@@ -20,7 +20,10 @@ class Camera:
         self.look_at = rtu.Vec3(0, 0, 0)
         self.vec_up = rtu.Vec3(0, 1, 0)
 
-        self.one_over_sqrt_spp = 1.0/math.sqrt(self.samples_per_pixel)
+        self.Lens = None
+        self.one_over_sqrt_spp = 1.0/int(math.floor(math.sqrt(self.samples_per_pixel)))
+        self.camera_rng = np.random.default_rng()
+
 
         self.init_camera()
         pass
@@ -37,24 +40,21 @@ class Camera:
         self.set_Lens(fDefocusAngle, fFocusDist)
 
         self.img_height = self.compute_img_height()
-        # self.focal_length = (self.look_from - self.look_at).len()
         self.center = self.look_from
 
         h = math.tan(math.radians(self.vertical_fov)/2.0)
         self.viewport_height = 2.0 * h * self.Lens.get_focus_dist()
-        self.viewport_width = self.compute_viewport_width()
+        self.viewport_width = self.viewport_height * float(self.img_width/self.img_height)
 
         self.camera_frame_w = rtu.Vec3.unit_vector(self.look_from - self.look_at)
         self.camera_frame_u = rtu.Vec3.unit_vector(rtu.Vec3.cross_product(self.vec_up, self.camera_frame_w))
         self.camera_frame_v = rtu.Vec3.cross_product(self.camera_frame_w, self.camera_frame_u)
 
-        # self.viewport_u = rtu.Vec3(self.viewport_width, 0, 0)
-        # self.viewport_v = rtu.Vec3(0, -self.viewport_height, 0)
-        self.viewport_u = self.camera_frame_u*self.viewport_width
-        self.viewport_v = -self.camera_frame_v*self.viewport_height
+        self.viewport_u = self.camera_frame_u * self.viewport_width
+        self.viewport_v = self.camera_frame_v * (-self.viewport_height)
         self.pixel_du = self.viewport_u / self.img_width
         self.pixel_dv = self.viewport_v / self.img_height
-        # self.viewport_upper_left = self.center - rtu.Vec3(0, 0, self.focal_length) - self.viewport_u/2 - self.viewport_v/2
+
         self.viewport_upper_left = self.center - (self.camera_frame_w*self.Lens.get_focus_dist()) - self.viewport_u/2 - self.viewport_v/2
         self.pixel00_location = self.viewport_upper_left + (self.pixel_du+self.pixel_dv)*0.5
         self.film = np.zeros((self.img_height, self.img_width, self.img_spectrum))
@@ -95,9 +95,8 @@ class Camera:
         return rtr.Ray(ray_origin, ray_direction)
     
     def get_jittered_ray(self, i, j, s_i, s_j):
-
         pixel_center = self.pixel00_location + (self.pixel_du*i) + (self.pixel_dv*j)
-        pixel_sample = pixel_center + self.pixel_sample_square(s_i, s_j)
+        pixel_sample = pixel_center + self.pixel_sample_square(s_i, s_j, self.pixel_du, self.pixel_dv) * 0.5
 
         ray_origin = self.center
         ray_direction = pixel_sample - ray_origin
@@ -105,14 +104,14 @@ class Camera:
         return rtr.Ray(ray_origin, ray_direction)
 
     def random_pixel_in_square(self, vDu, vDv):
-        px = -0.5 + rtu.random_double()
-        py = -0.5 + rtu.random_double()
+        px = -0.5 + self.camera_rng.uniform(low=0.0, high=1.0)
+        py = -0.5 + self.camera_rng.uniform(low=0.0, high=1.0)
         return (vDu*px) + (vDv*py)
 
-    def pixel_sample_square(self, s_i, s_j):
-        px = -0.5 + self.one_over_sqrt_spp * (s_i + rtu.random_double())
-        py = -0.5 + self.one_over_sqrt_spp * (s_j + rtu.random_double())
-        return (self.pixel_du * px) + (self.pixel_dv * py)
+    def pixel_sample_square(self, s_i, s_j, vDu, vDv):        
+        px = -0.5 + (self.one_over_sqrt_spp * (s_i + self.camera_rng.uniform(low=0.0, high=1.0)))
+        py = -0.5 + (self.one_over_sqrt_spp * (s_j + self.camera_rng.uniform(low=0.0, high=1.0)))
+        return (vDu*px) + (vDv*py)
 
 
 class Lens():

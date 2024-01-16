@@ -11,7 +11,10 @@ infinity_number = sys.float_info.max
 pi = 3.1415926535897932385
 
 def random_double(min=0.0, max=1.0):
-    return np.random.uniform(min, max)
+    return np.random.uniform(low=min, high=max)
+
+def random_double_rng(iRNG, min=0.0, max=1.0):
+    return iRNG.uniform(low=min, high=max)
 
 def linear_to_gamma(val, gammaVal):
     return math.pow(val, 1.0/gammaVal)
