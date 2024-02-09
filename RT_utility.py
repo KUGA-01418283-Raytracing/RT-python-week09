@@ -107,14 +107,14 @@ class Vec3:
     def random_cosine_hemisphere_on_z():
 
         # Generate two uniform random variables in [0,1]
-        r1 = random_double()
-        r2 = random_double()
+        r1 = None
+        r2 = None
 
         # Compute the random uniform vector (x,y,z) on hemisphere according to the random variables
-        phi = 2*pi*r1
-        x = math.cos(phi)*math.sqrt(r2)
-        y = math.sin(phi)*math.sqrt(r2)
-        z = math.sqrt(1-r2)
+
+        x = None
+        y = None
+        z = None
 
         return Vec3(x, y, z)
 

@@ -45,10 +45,7 @@ class Lambertian(Material):
         self.color_albedo = rtu.Color(cAlbedo.r(), cAlbedo.g(), cAlbedo.b())
 
     def scattering(self, rRayIn, hHinfo):
-        uvw = rtu.ONB()
-        uvw.build_from_w(hHinfo.getNormal())
-
-        scattered_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
+        scattered_direction = None
         scattered_ray = rtr.Ray(hHinfo.getP(), scattered_direction)
         attenuation_color = self.BRDF(rRayIn, scattered_ray, hHinfo)
         return rtu.Scatterinfo(scattered_ray, attenuation_color)
@@ -114,9 +111,7 @@ class TextureColor(Material):
             self.color_albedo = color_or_texture
 
     def scattering(self, rRayIn, hHinfo):
-        uvw = rtu.ONB()
-        uvw.build_from_w(hHinfo.getNormal())
-        scattered_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
+        scattered_direction = None
 
         scattered_ray = rtr.Ray(hHinfo.getP(), scattered_direction)
         attenuation_color = self.BRDF(rRayIn, scattered_ray, hHinfo)
@@ -164,10 +159,7 @@ class Phong(Material):
         self.alpha = fAlpha
 
     def scattering(self, rRayIn, hHinfo):
-        uvw = rtu.ONB()
-        uvw.build_from_w(hHinfo.getNormal())
-
-        reflected_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
+        reflected_direction = None
         reflected_ray = rtr.Ray(hHinfo.getP(), reflected_direction)
         phong_color = self.BRDF(rRayIn, reflected_ray, hHinfo)
 
@@ -196,10 +188,7 @@ class Blinn(Material):
         self.alpha = fAlpha
 
     def scattering(self, rRayIn, hHinfo):
-        uvw = rtu.ONB()
-        uvw.build_from_w(hHinfo.getNormal())
-
-        reflected_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
+        reflected_direction = None
         reflected_ray = rtr.Ray(hHinfo.getP(), reflected_direction)
         blinn_color = self.BRDF(rRayIn, reflected_ray, hHinfo)
 
@@ -214,22 +203,6 @@ class Blinn(Material):
         spec_color = rtu.Color(self.color_albedo.r(), self.color_albedo.g(), self.color_albedo.b())*self.ks*math.pow(H_dot_N, self.alpha)
 
         return diff_color + spec_color
-
-# # Cook-Torrance BRDF model
-# # fr = kd/pi + ks*(DFG/4(w_o.N * w_i.N))
-# class CookTorrance(Material):
-#     def __init__(self, cAlbedo, kd, ks) -> None:
-#         super().__init__()
-#         self.color_albedo = rtu.Color(cAlbedo.r(), cAlbedo.g(), cAlbedo.b())
-#         self.kd = kd
-#         self.ks = ks
-
-#     def BRDF(self, rView, rLight, hHinfo):
-#         # calculate diffuse color
-#         diff_color = None
-#         spec_color = None
-
-#         return diff_color + spec_color
     
 # Cook-Torrance BRDF model
 # fr = kd/pi + ks*(DFG/4(w_o.N * w_i.N))
@@ -242,10 +215,7 @@ class CookTorrance(Material):
         self.ior = fIOR
 
     def scattering(self, rRayIn, hHinfo):
-        uvw = rtu.ONB()
-        uvw.build_from_w(hHinfo.getNormal())
-
-        reflected_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
+        reflected_direction = None
         reflected_ray = rtr.Ray(hHinfo.getP(), reflected_direction)
         ct_color = self.BRDF(rRayIn, reflected_ray, hHinfo)
 
