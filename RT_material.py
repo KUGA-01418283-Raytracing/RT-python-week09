@@ -45,7 +45,10 @@ class Lambertian(Material):
         self.color_albedo = rtu.Color(cAlbedo.r(), cAlbedo.g(), cAlbedo.b())
 
     def scattering(self, rRayIn, hHinfo):
-        scattered_direction = None
+        uvw = rtu.ONB()
+        uvw.build_from_w(hHinfo.getNormal())
+
+        scattered_direction = uvw.local(rtu.Vec3.random_cosine_hemisphere_on_z())
         scattered_ray = rtr.Ray(hHinfo.getP(), scattered_direction)
         attenuation_color = self.BRDF(rRayIn, scattered_ray, hHinfo)
         return rtu.Scatterinfo(scattered_ray, attenuation_color)
